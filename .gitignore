@@ -1,0 +1,22 @@
+# Ignore Python cache
+__pycache__/
+*.pyc
+
+# Ignore virtual environments
+venv/
+myenv/
+env/
+myenv_2/
+
+# Ignore database
+*.sqlite3
+
+# Ignore media and import folders
+media/
+imports/
+
+# VS Code settings (optional)
+.vscode/
+
+# Environment vars (if you have any)
+.env
