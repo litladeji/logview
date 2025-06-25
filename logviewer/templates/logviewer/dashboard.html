@@ -1,0 +1,172 @@
+{% extends 'logviewer/base.html' %}
+
+{% block title %}Dashboard - Log Viewer{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4">Test Station Dashboard</h1>
+
+        <!-- Overview Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stats-card border-primary">
+                    <div class="card-body text-center">
+                        <h2 class="text-primary">{{ total_logs }}</h2>
+                        <p class="card-text">Total Logs</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card border-info">
+                    <div class="card-body text-center">
+                        <h2 class="text-info">{{ total_stations }}</h2>
+                        <p class="card-text">Active Stations</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card border-success">
+                    <div class="card-body text-center">
+                        <h2 class="text-success">{{ overall_pass_rate }}%</h2>
+                        <p class="card-text">Overall Pass Rate</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card border-warning">
+                    <div class="card-body text-center">
+                        <h2 class="text-warning">
+                            {{ recent_logs|length }}
+                        </h2>
+                        <p class="card-text">Recent Logs</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Station Statistics -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Station Performance</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if station_stats %}
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Station ID</th>
+                                            <th>Total Tests</th>
+                                            <th>Passed</th>
+                                            <th>Failed</th>
+                                            <th>Pass Rate</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for station in station_stats %}
+                                        <tr>
+                                            <td><strong>{{ station.station_id }}</strong></td>
+                                            <td>{{ station.total }}</td>
+                                            <td class="text-success">{{ station.passes }}</td>
+                                            <td class="text-danger">{{ station.fails }}</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="progress flex-grow-1 me-2" style="height: 20px;">
+                                                        <div class="progress-bar 
+                                                            {% if station.pass_rate >= 90 %}bg-success
+                                                            {% elif station.pass_rate >= 70 %}bg-warning
+                                                            {% else %}bg-danger{% endif %}" 
+                                                             role="progressbar" 
+                                                             style="width: {{ station.pass_rate }}%">
+                                                        </div>
+                                                    </div>
+                                                    <small>{{ station.pass_rate }}%</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% if station.pass_rate >= 90 %}
+                                                    <span class="badge bg-success">Excellent</span>
+                                                {% elif station.pass_rate >= 70 %}
+                                                    <span class="badge bg-warning">Good</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Needs Attention</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <p class="text-muted">No station data available</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Recent Activity</h5>
+                        <a href="{% url 'logviewer:logs_list' %}" class="btn btn-sm btn-outline-primary">
+                            View All
+                        </a>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if recent_logs %}
+                            <div class="list-group list-group-flush">
+                                {% for log in recent_logs %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ log.station_id }}</strong><br>
+                                        <small class="text-muted">{{ log.timestamp|date:"M d, H:i" }}</small>
+                                    </div>
+                                    <div>
+                                        {% if log.result == 'PASS' %}
+                                            <span class="badge pass-badge">✅</span>
+                                        {% else %}
+                                            <span class="badge fail-badge">❌</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <p class="text-muted">No recent logs</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5>Quick Actions</h5>
+                        <a href="{% url 'logviewer:logs_list' %}" class="btn btn-primary me-2">
+                            📋 View All Logs
+                        </a>
+                        <a href="{% url 'logviewer:logs_list' %}?result=FAIL" class="btn btn-danger me-2">
+                            ❌ View Failed Tests
+                        </a>
+                        <button class="btn btn-success" onclick="location.reload()">
+                            🔄 Refresh Dashboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

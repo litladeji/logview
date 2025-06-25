@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Log Viewer{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <style>
+        .pass-badge { background-color: #28a745; }
+        .fail-badge { background-color: #dc3545; }
+        .log-metrics { 
+            background-color: #f8f9fa; 
+            border-radius: 5px; 
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        .navbar-brand {
+            font-weight: bold;
+        }
+        .stats-card {
+            border-left: 4px solid #007bff;
+        }
+        .json-view {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .json-key { color: #68d391; }
+        .json-string { color: #fbb6ce; }
+        .json-number { color: #90cdf4; }
+        .json-boolean { color: #f6ad55; }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'logviewer:dashboard' %}">
+                📊 Test Station Log Viewer
+            </a>
+            
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{% url 'logviewer:dashboard' %}">Dashboard</a>
+                <a class="nav-link" href="{% url 'logviewer:logs_list' %}">All Logs</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script>
+        // Auto-refresh functionality (optional)
+        function autoRefresh() {
+            if (document.getElementById('auto-refresh').checked) {
+                setTimeout(() => {
+                    location.reload();
+                }, 30000); // Refresh every 30 seconds
+            }
+        }
+        
+        // Initialize tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+    
+    {% block extra_js %}
+    {% endblock %}
+</body>
+</html>

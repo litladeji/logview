@@ -1,0 +1,198 @@
+{% extends 'logviewer/base.html' %}
+
+{% block title %}All Logs - Log Viewer{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1 class="mb-3">Test Station Logs</h1>
+        
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">Total Logs</h5>
+                        <h2 class="card-text">{{ total_logs }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-success">Passed</h5>
+                        <h2 class="card-text">{{ pass_count }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-danger">Failed</h5>
+                        <h2 class="card-text">{{ fail_count }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-info">Pass Rate</h5>
+                        <h2 class="card-text">{{ pass_rate }}%</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="station" class="form-label">Station</label>
+                        <select name="station" id="station" class="form-select">
+                            <option value="">All Stations</option>
+                            {% for station in stations %}
+                                <option value="{{ station }}" {% if station == current_station %}selected{% endif %}>
+                                    {{ station }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="result" class="form-label">Result</label>
+                        <select name="result" id="result" class="form-select">
+                            <option value="">All Results</option>
+                            <option value="PASS" {% if current_result == 'PASS' %}selected{% endif %}>PASS</option>
+                            <option value="FAIL" {% if current_result == 'FAIL' %}selected{% endif %}>FAIL</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="search" class="form-label">Search</label>
+                        <input type="text" name="search" id="search" class="form-control" 
+                               placeholder="Search station ID or filename..." 
+                               value="{{ search_query }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Filter</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Logs Table -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Log Entries</h5>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="auto-refresh" onchange="autoRefresh()">
+                    <label class="form-check-label" for="auto-refresh">
+                        Auto-refresh
+                    </label>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if page_obj %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Station ID</th>
+                                    <th>Timestamp</th>
+                                    <th>Result</th>
+                                    <th>Temperature</th>
+                                    <th>Humidity</th>
+                                    <th>Filename</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in page_obj %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ log.station_id }}</strong>
+                                    </td>
+                                    <td>
+                                        <small>{{ log.timestamp|date:"M d, Y H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        {% if log.result == 'PASS' %}
+                                            <span class="badge pass-badge">✅ PASS</span>
+                                        {% else %}
+                                            <span class="badge fail-badge">❌ FAIL</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if log.metrics.temperature %}
+                                            {{ log.metrics.temperature }}°C
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if log.metrics.humidity %}
+                                            {{ log.metrics.humidity }}%
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ log.filename }}</small>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'logviewer:log_detail' log.id %}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            View Details
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if page_obj.has_other_pages %}
+                    <div class="d-flex justify-content-center mt-3">
+                        <nav aria-label="Log pagination">
+                            <ul class="pagination">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1{% if current_station %}&station={{ current_station }}{% endif %}{% if current_result %}&result={{ current_result }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">First</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_station %}&station={{ current_station }}{% endif %}{% if current_result %}&result={{ current_result }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">Previous</a>
+                                    </li>
+                                {% endif %}
+
+                                <li class="page-item active">
+                                    <span class="page-link">
+                                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                                    </span>
+                                </li>
+
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_station %}&station={{ current_station }}{% endif %}{% if current_result %}&result={{ current_result }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">Next</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if current_station %}&station={{ current_station }}{% endif %}{% if current_result %}&result={{ current_result }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">Last</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <h4 class="text-muted">No logs found</h4>
+                        <p>Try adjusting your filters or upload some log files.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

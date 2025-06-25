@@ -1,0 +1,144 @@
+{% extends 'logviewer/base.html' %}
+
+{% block title %}Log Details - {{ log.station_id }} - Log Viewer{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'logviewer:dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'logviewer:logs_list' %}">Logs</a></li>
+                <li class="breadcrumb-item active">{{ log.station_id }} - {{ log.timestamp|date:"M d, Y H:i" }}</li>
+            </ol>
+        </nav>
+
+        <!-- Log Header -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h4 class="mb-0">
+                            Log Details - Station {{ log.station_id }}
+                        </h4>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        {% if log.result == 'PASS' %}
+                            <span class="badge pass-badge fs-6">✅ PASS</span>
+                        {% else %}
+                            <span class="badge fail-badge fs-6">❌ FAIL</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Basic Information</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Station ID:</strong></td>
+                                <td>{{ log.station_id }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Timestamp:</strong></td>
+                                <td>{{ log.timestamp|date:"F d, Y, g:i A" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Result:</strong></td>
+                                <td>
+                                    {% if log.result == 'PASS' %}
+                                        <span class="text-success">{{ log.result }}</span>
+                                    {% else %}
+                                        <span class="text-danger">{{ log.result }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Filename:</strong></td>
+                                <td><code>{{ log.filename }}</code></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Uploaded:</strong></td>
+                                <td>{{ log.uploaded_at|date:"F d, Y, g:i A" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Environmental Data</h6>
+                        <table class="table table-sm">
+                            {% if log.metrics.temperature %}
+                            <tr>
+                                <td><strong>Temperature:</strong></td>
+                                <td>{{ log.metrics.temperature }}°C</td>
+                            </tr>
+                            {% endif %}
+                            {% if log.metrics.humidity %}
+                            <tr>
+                                <td><strong>Humidity:</strong></td>
+                                <td>{{ log.metrics.humidity }}%</td>
+                            </tr>
+                            {% endif %}
+                            {% if log.metrics.voltage %}
+                            <tr>
+                                <td><strong>Voltage:</strong></td>
+                                <td>{{ log.metrics.voltage }}V</td>
+                            </tr>
+                            {% endif %}
+                            {% if log.metrics.current %}
+                            <tr>
+                                <td><strong>Current:</strong></td>
+                                <td>{{ log.metrics.current }}A</td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Raw Metrics Data -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Raw Metrics Data</h5>
+                <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard()">
+                    📋 Copy JSON
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="json-view p-3">
+                    <pre id="json-content">{{ formatted_metrics }}</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="mt-4">
+            <a href="{% url 'logviewer:logs_list' %}" class="btn btn-secondary">
+                ← Back to All Logs
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard() {
+    const jsonContent = document.getElementById('json-content').textContent;
+    navigator.clipboard.writeText(jsonContent).then(function() {
+        // Show success message
+        const button = document.querySelector('[onclick="copyToClipboard()"]');
+        const originalText = button.innerHTML;
+        button.innerHTML = '✅ Copied!';
+        button.classList.add('btn-success');
+        button.classList.remove('btn-outline-secondary');
+        
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-secondary');
+        }, 2000);
+    });
+}
+</script>
+{% endblock %}
