@@ -1,0 +1,120 @@
+{% extends "sipm_cards/base.html" %}
+
+{% block title %}{{sipm.sipm_number}}{% endblock %}
+{% block head %}
+<style>
+table.info {
+    width : 1500px;
+    table-layout : fixed;
+    border-collapse : collapse;
+}
+td {
+    padding : 5px;
+}
+table, td, th {
+    border : 1px solid white;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="row" align="left" style="padding-left:50px;">
+    <h3>SiPM Control Card Overview</h3>
+    <div id="breakLine" style="height:2px;width:25%;background-color:#E74C3C"></div>
+</div><br>
+
+<!-- SiPM Control Card Info Table -->
+<table id="sipminfo" class="info" style="margin-left:50px; font-size:30px;">
+    <col width="40%">
+    <col width="60%">
+    <tbody>
+        <div id="accordion" class="collapse">
+        <tr>
+            <td>SiPM Control Card №:</td>
+            <td>{{sipm.sipm_control_card}}</td>
+        </tr>
+        <tr>
+            <td>BV Converter Card №:</td>
+            <td>{{sipm.bv_converter_card}}</td>
+        </tr>
+        <tr>
+            <td>Readout Module №:</td>
+            <td><a href="{{ SITE_URL }}/rm/{{sipm.get_rm}}">{{sipm.get_rm}}</a></td>
+        </tr>
+        <tr>
+            <td>Comments:</td>
+            <td>{{sipm.comments}}</td>
+        </tr>
+        </div>
+    </tbody>
+</table>
+
+<div class="row" align="left" style="padding-left:50px;">
+    <h3>Uploaded File</h3>
+    <div id="breakLine" style="height:2px;width:20%;background-color:#E74C3C"></div>
+</div><br>
+<a href="{{sipm.upload.url}}"><img src="{{sipm.upload.url}}" style="width:50%;height:50%;"></a>
+
+<div class="row" align="left" style="padding-left:50px;">
+    <h3>Calibration Results</h3>
+    <div id="breakLine" style="height:2px;width:25%;background-color:#E74C3C"></div>
+    <br>
+</div>
+
+<div class="row" align="right" style="padding-right:50px;">
+  Search: <input type="text" style="color:#2C3E50" id="searchfield">
+</div>
+
+<table id="testsummary" class="table table-bordered" cellspacing="0" width="100%">
+  <thead class="thead-default" style="color:#2C3E50;background-color:#ECF0F1">
+    <tr data-toggle="collapse" data-target="#accordion" class="clickable">
+      <th>Card ID</th>
+      <th>Channel</th>
+      <th>30 V</th>
+      <th>60 V</th>
+      <th>70 V</th>
+      <th>Slope</th>
+      <th>Slope % Error</th>
+      <th>Offset</th>
+      <th>Offset % Error</th>
+      <th>Chi Squared</th>
+    </tr>
+  </thead>
+  <tbody>
+    <div id="accordion" class="collapse">
+    {% for datum in data %}
+    <tr>
+      <th>{{datum.id}}</th>
+      <td>{{datum.channel}}</td>
+      <td>{{datum.V_30}}</td>
+      <td>{{datum.V_60}}</td>
+      <td>{{datum.V_70}}</td>
+      <td>{{datum.slope}}</td>
+      <td>{{datum.slope_error}}</td>
+      <td>{{datum.offset}}</td>
+      <td>{{datum.offset_error}}</td>
+      <td>{{datum.chi_squared}}</td>
+    </tr>
+    {% endfor %}
+  </div>
+  </tbody>
+</table>
+
+<script src="https://code.jquery.com/jquery-1.12.3.js"></script>
+<script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    oTable = $('#testsummary').DataTable({
+      "paging":   false,
+      dom: 'lrtp',
+    }
+    );
+    $('#searchfield').keyup(function(){
+          oTable.search($(this).val()).draw();
+    })
+} );
+</script>
+
+{% endblock %}

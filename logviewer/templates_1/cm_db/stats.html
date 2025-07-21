@@ -1,0 +1,133 @@
+{% extends "cm_db/base.html" %}
+
+{% block head %}
+<style>
+.splitColumns {
+    -webkit-column-count: 3;
+       -moz-column-count: 3;
+            column-count: 3;
+}
+</style>
+{% endblock %}
+
+{% block title %}Test Database{% endblock %}
+
+{% block content %}
+
+<div class="row">
+        <div align="center">
+                <h2 class="title">Successful Cards</h2>
+        </div>
+</div>
+
+<div class="row">
+        <div class="col-md-12">
+                <table class="table table-bordered" style="width:95%" align="center">
+                <thead class="thead-default" style="color:#2C3E50;background-color:#ECF0F1">
+                        <tr>
+                                <th> Card Names </th>
+                                <th> # of Cards </th>
+                                <th> % Successful </th>
+                        </tr>
+                </thead>
+                <tbody style="color:#2C3E50;background-color: #F6F6F6">
+                        {% if passed %}
+                        <tr align="left">
+                                <td><ul class="splitColumns" style="font-size:10px">
+                                {% for card in passed.cards %}
+                                <li><a href="{{card}}/">{{card}}</a></li>
+                                {% endfor %}
+                                </ul></td>
+                                <td> {{passed.number}} </td>
+                                <td> {{passed.percentage}}% </td>
+                        </tr>
+                        {% else %}
+                        <h1> No test database </h1>
+                        {% endif %}
+                </tbody>
+                </table>
+        </div>
+</div>
+
+<br/><br/>
+
+<div class="row">
+        <div align="center">
+                <h2 class="title">Remaining Cards</h2>
+        </div>
+</div>
+
+<div class="row">
+        <div class="col-md-12">
+                <table class="table table-bordered" style="width:95%" align="center">
+                <thead class="thead-default" style="color:#2C3E50;background-color:#ECF0F1">
+                        <tr>
+                                <th> Test Not Completed </th>
+                                <th> Card Names </th>
+                                <th> # of Cards </th>
+                                <th> % of Total Cards </th>
+                        </tr>
+                </thead>
+                <tbody style="color:#2C3E50;background-color: #F6F6F6">
+                        {% if remaining %}
+                        {% for test in remaining %}
+                        <tr align="left">
+                                <td> {{test.name}} </td>
+                                <td><ul class="splitColumns" style="font-size:10px">
+                                {% for card in test.cards %}
+                                <li><a href="{{card}}/">{{card}}</a></li>
+                                {% endfor %}
+                                </ul>
+                                <td> {{test.number}} </td>
+                                <td> {{test.percentage}}% </td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <h1> No test database </h1>
+                        {% endif %}
+                </tbody>
+                </table>
+        </div>
+</div>
+
+<br/><br/>
+
+<div class="row">
+        <div align="center">
+                <h2 class="title">Failed Cards</h2>
+        </div>
+</div>
+
+<div class="row">
+        <div class="col-md-12">
+                <table class="table table-bordered" style="width:95%" align="center">
+                <thead class="thead-default" style="color:#2C3E50;background-color:#ECF0F1">
+                        <tr>
+                                <th> Test Failed </th>
+                                <th> Card Names </th>
+                                <th> # of Cards </th>
+                                <th> % of Total Cards </th>
+                        </tr>
+                </thead>
+                <tbody style="color:#2C3E50;background-color: #F6F6F6">
+                        {% if failed %}
+                        {% for test in failed %}
+                        <tr align="left">
+                                <td> {{test.name}} </td>
+                                <td><ul class="splitColumns" style="font-size:10px">
+                                {% for card in test.cards %}
+                                <li><a href="{{card}}/">{{card}}</a></li>
+                                {% endfor %}
+                                </ul>
+                                <td> {{test.number}} </td>
+                                <td> {{test.percentage}}% </td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <h1> No test database </h1>
+                        {% endif %}
+                </tbody>
+                </table>
+        </div>
+</div>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends "cm_db/base.html" %}
+
+{% block title %}{{card.barcode}}{% endblock %}
+{% block head %}
+<style>
+    .forced{
+      color:#2C3E50;
+      background-color:#2ECC71;
+    }
+    .warn{
+      color:#2C3E50;
+      background-color:#F1C40F;
+    }
+    .okay{
+      color:#2ECC71;
+    }
+    .bad{
+      color:#2C3E50;
+      background-color:#E74C3C;
+    }
+    .comments{
+      margin-left:50px;
+      background:#27ae60;
+      width: 400px;
+      -moz-border-radius: 4px;
+      -webkit-border-radius: 4px;
+      border-radius: 4px;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="row" align="left" style="padding-left:50px;">
+    <h3>Calibration Overview</h3>
+    <div id="breakLine" style="height:2px;width:25%;background-color:#E74C3C"></div>
+</div><br>
+
+<!--
+<div class="row" align="left">
+    <div class="col-md-3" style="padding-left:50px;">
+        <h4>Barcode:</h4>
+        <h4>UID:</h4>
+        <h4>Bridge Firmware:</h4>
+        <h4>Igloo Firmware:</h4>
+    </div>
+    <div class="col-md-4">
+        <h4>{{card.barcode}}</h4>
+        <h4>{{card.get_uid_flipped}}</h4>
+        <h4>{{card.get_bridge_ver}}</h4>
+        <h4>{{card.get_igloo_ver}}</h4>
+    </div>
+</div>
+-->
+
+<table id="cardinfo" class="table" style="margin-left:50px; font-size:30px;" cellspacing="0" width="50%">
+    <tbody>
+        <div id="accordion" class="collapse">
+        <tr>
+            <td>Barcode:</td>
+            <td>{{card.barcode}}</td>
+            <td>-----</td>
+        </tr>
+        <tr>
+            <td>Unique ID:</td>
+            <td>{{card.get_uid_mac}}</td>
+            <td>({{card.get_uid_flipped}})</td>
+        </tr>
+        <tr>
+            <td>Bridge FW:</td>
+            <td>{{card.get_bridge_ver_hex}}</td>
+            <td>({{card.get_bridge_ver}})</td>
+        </tr>
+        <tr>
+            <td>Igloo FW:</td>
+            <td>{{card.get_igloo_ver_hex}}</td>
+            <td>({{card.get_igloo_ver}})</td>
+        </tr>
+        </div>
+    </tbody>
+</table>
+
+
+<br>
+<div class="row" align="left" style="padding-left:50px;">
+    <h3>Calibration Results</h3>
+    <div id="breakLine" style="height:2px;width:25%;background-color:#E74C3C"></div>
+    <br>
+</div>
+
+<div class="row" align="right" style="padding-right:50px;">
+  Search: <input type="text" style="color:#2C3E50" id="searchfield">
+</div>
+<br>
+
+<table id="testsummary" class="table table-bordered" cellspacing="0" width="100%">
+  <thead class="thead-default" style="color:#2C3E50;background-color:#ECF0F1">
+    <tr data-toggle="collapse" data-target="#accordion" class="clickable">
+      <th>Group<span class="fui-list-numbered" style="float:right"></span></th>
+      <th>Date</th>
+      <th>Plots<span class="fui-list-numbered" style="float:right"></span></th>
+      <th>Mappings<span class="fui-list-numbered" style="float:right"></span></th>
+      <th>Results</th>
+      <th>Failed</th>
+      <th>Download</th>
+    </tr>
+  </thead>
+  <tbody>
+    <div id="accordion" class="collapse">
+    {% for cal in cals %}
+    <tr>
+      <th scope="row">{{cal.group}}</th>
+      <td>{{cal.date}}</td>
+      <td><a href="calibration/{{cal.group}}/plots">Plot View</a></td>
+      <td><a href="{{cal.mappings.url}}">Mappings</a></td>
+      <td><a href="calibration/{{cal.group}}/results">Result View</a></td>
+      <td>{{cal.failed}}</td>
+      <td><a href="{{cal.download.url}}">Download</a></td>
+    </tr>
+    {% endfor %}
+  </div>
+  </tbody>
+</table>
+
+<script src="https://code.jquery.com/jquery-1.12.3.js"></script>
+<script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    oTable = $('#testsummary').DataTable({
+      "paging":   false,
+      dom: 'lrtp',
+    }
+    );
+    $('#searchfield').keyup(function(){
+          oTable.search($(this).val()).draw();
+    })
+} );
+</script>
+
+
+{% endblock %}

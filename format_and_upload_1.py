@@ -19,7 +19,7 @@ import os
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "logview.settings")
 django.setup()
 
-from logviewer.models import Test, Overall_Summary
+from logviewer.models import Test, Overall_Summary, CM_Card
 
 ## Grab JSON Files
 idir = "imports"   #changed the origninal directory
@@ -41,6 +41,13 @@ def stringReplace(word):
         word = word.replace("]", "")
     return word
 
+def get_Barcode(data):
+    null_chip_ID = "MissingID"
+    if 'chip_number' in data and data['chip_number']:
+        barcode = data['chip_number']
+    else:
+        barcode = null_chip_ID
+    return barcode
 
 def Metadata_Formatter(metadata, metadata_type):
     #print("formatting metadata of type", metadata_type)
@@ -106,7 +113,13 @@ def Create_Fresh_Card(data, fname):
     #save test details
     newcard.save()
     overall = list(Overall_Summary.objects.all())[0]
-    overall.totalcards += 1
+    print("Type of totalcards:", type(overall.totalcards))
+    print("Value of totalcards:", overall.totalcards)
+    
+    if not overall.totalcards:
+        overall.totalcards = 1
+    else:
+        overall.totalcards +=1
     overall.save()
 
 def Update_Existing_Card(data, fname):
@@ -348,13 +361,30 @@ def jsonFileUploader(fname):
 ## upload all the JSON files in the database
 
 def main():
-    if list(Overall_Summary.objects.all()) == []:
-        overall = Overall_Summary.objects.create()
-        overall.passedcards = 0
-        overall.failedcards = 0
-        overall.totalcards = 0
-        overall.test_types = []
-        overall.save()
+
+    if not Overall_Summary.objects.exists():
+        Overall_Summary.objects.create(
+            passedcards=0,
+            failedcards=0,
+            totalcards=0,
+            test_types=[]
+        )
+
+
+
+   
+    # Nummary = Overall_Summary.objects.first()
+
+    # if Nummary:
+    #     print("Total:", Nummary.totalcards)
+    #     print("Passed:", Nummary.passedcards)
+    #     print("Failed:", Nummary.failedcards)
+    #     print("Test Types:", )
+    #     for test in Nummary.test_types:
+    #         print(f" - {test['test_name']}: Passed={test['number_passed']}, Total={test['number_total']}")
+    # else:
+    #     print("No summary found.")
+
     print("starting file upload script...")
     filename_list = list(Test.objects.values_list("filename"))
     #print("FILENAME LIST:",filename_list)

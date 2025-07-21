@@ -1,0 +1,43 @@
+{% extends "calibration_units/base.html" %}
+{% load static %}
+{% block head %}
+<link href="i{% static "cm_db/css/catalog.css" %}" rel="stylesheet">
+    <style>
+        .divider{
+            width:200px;
+            height:auto;
+            display:inline-block;
+        }
+    </style>
+{% endblock %}
+
+{% block title %}HE Calibration Units Database{% endblock %}
+
+{% block catalog %}class="active"{% endblock %}
+
+{% block content %}
+<div class="row" align="left" style="padding-left:50px;">
+        <h3>
+        Calibration Unit Catalog
+        <div class="divider"></div>
+        Number of CUs: {{total_count}}
+    </h3>
+    <div id="breakLine" style="height:2px;width:25%;background-color:#E74C3C"></div>
+</div>
+<br><br>
+
+<div class="row" style="padding-left:50px;padding-right:50px">
+    <div class="splitColumns">
+      <ul>
+{% if cu_list %}
+<div class="row">
+        <div align="center"><ul>
+        {% for module in cu_list %}
+        <li style="font-size:18px"><a href={{module.cu_number}}>{{module.cu_number}}</a></li>
+        {%endfor%}
+        </ul></div>
+</div>
+{% else %}
+<h1>This database contains no calibration units.</h1>
+{% endif %}
+{% endblock %}

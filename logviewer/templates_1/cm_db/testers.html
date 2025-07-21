@@ -1,0 +1,42 @@
+{% extends "cm_db/base.html" %}
+
+{% block title %}Authorized Tester Database{% endblock %}
+
+{% block testers %}class="active"{% endblock %}
+
+{% block content %}
+{% if tester_list %}
+
+<div class="row" align="left" style="padding-left:50px;">
+    <h3>Testing People</h3><br>
+    <div id="breakLine" style="height:2px;width:25%;background-color:#E74C3C"></div>
+    </div>
+<br><br>
+
+<div class="row">
+        <div class="col-md-12">
+                <table class="table" style="width:650px" align="center">
+                        <thead>
+                                <tr>
+                                        <th> Name </th>
+                                        <th> Email </th>
+                    <th> Affiliation </th>
+                                </tr>
+                        </thead>
+                        <tbody>
+
+                                {% for tester in tester_list %}
+                                <tr>
+                                        <td align="left"> {{tester.username}} </td>
+                                        <td align="left"><a href="mailto:{{tester.email}}"> {{tester.email}} </a></td>
+                                        <td align="left"> {{tester.affiliation}} </td>
+                                </tr>
+                                {% endfor %}
+                        </tbody>
+                </table>
+        </div>
+</div>
+{% else %}
+<h1>No tester database</h1>
+{% endif %}
+{% endblock %}

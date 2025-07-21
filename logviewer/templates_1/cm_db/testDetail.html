@@ -1,0 +1,311 @@
+{% extends "cm_db/base.html" %}
+{% load filters %}
+{% block title %}{{card.barcode}}{% endblock %}
+{% block head %}
+<style>
+    .forced{
+      color:#2C3E50;
+      background-color:#2ECC71;
+    }
+    .warn{
+      color:#2C3E50;
+      background-color:#F1C40F;
+    }
+    .okay{
+      color:#2ECC71;
+    }
+    .bad{
+      color:#2C3E50;
+      background-color:#E74C3C;
+    }
+    .comments{
+      margin-left:50px;
+      background:#27ae60;
+      width: 400px;
+      -moz-border-radius: 4px;
+      -webkit-border-radius: 4px;
+      border-radius: 4px;
+    }
+    .hide{
+      display: none;
+    }
+
+</style>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="row" align="left" style="padding-left:50px;">
+    <h3>{{test}} Overview</h3>
+    <div id="breakLine" style="height:2px;width:25%;background-color:#E74C3C"></div>
+</div><br>
+
+<!-- Card Info Table -->
+<table id="cardinfo" class="table" style="margin-left:50px; font-size:30px;" cellspacing="0" width="50%">
+    <tbody>
+        <div id="accordion" class="collapse">
+        <tr>
+            <td>Barcode:</td>
+            <td>{{card.barcode}}</td>
+            <td>-----</td>
+        </tr>
+        <tr>
+            <td>Unique ID:</td>
+            <td>{{card.get_uid_mac}}</td>
+            <td>({{card.get_uid_flipped}})</td>
+        </tr>
+        <tr>
+            <td>ECON-T:</td>
+            <td>{{card.ECONT}}</td>
+            <td>{{card.ECONTID}}
+        </tr>
+        <tr>
+            <td>ECON-D:</td>
+            <td>{{card.ECONT}}</td>
+            <td>({{card.ECONTID}})</td>
+        </tr>
+        </div>
+    </tbody>
+</table>
+
+<div class="row" style="padding-left:2%;">
+    <div class="col-md-12">
+        <h3>Test Runs:</h3>
+        {% for attempt, filename, attempt_number, status, css, data in attempts %}
+        <br>
+        <div class="row">
+            <div style="float:left;width:50%">
+                    <h4 class="{{css}}">Attempt {{attempt_number}} - {{status}}</h4>
+            </div>
+            <div style="float:left">
+                    <form action="" method="post" id="overwrite_form_{{attempt_number}}">
+                    {% csrf_token %}
+                    <input value="" id="password_{{attempt_number}}" name="secret_{{attempt_number}}" type="hidden">
+                    <button onclick="submitOverwrite({{attempt_number}})" type="submit" class="btn btn-primary" value="{{attempt_number}}" name="overwrite_pass">
+                        {% if not attempt.override_pass %}
+                        Force Pass
+                        {% else %}
+                        Remove Force Pass
+                        {% endif %}
+                    </button>
+                    <button onclick="submitOverwrite({{attempt_number}})" type="submit" class="btn btn-primary" value="{{attempt_number}}" name="overwrite_valid">
+                        {% if not attempt.valid %}
+                        Mark as Valid
+                        {% else %}
+                        Mark Invalid
+                        {% endif %}
+                    </button>
+                </form>
+            </div>
+
+        </div>
+        <div style="padding-left:2%;">
+            <div style="float:right;padding-right:10%">
+                <div class="row" align="center" style="padding-left:10px;width:90%">
+                    <form action="" method="post" id="comment_form">
+                    {% csrf_token %}
+                    Add a Comment
+                    <textarea name="comment" rows="4" cols="20" class="form-control" placeholder="Comment..." style="width:330px; height:80px;"></textarea>
+                    <input type="submit" class="btn btn-primary" value="Submit" name="comment_add">
+                    <input type="hidden" name="comment_number" value="{{attempt_number}}">
+                    </form>
+                </div>
+            </div>
+            <table id="testsummary" class="table table-bordered" cellspacing="0" style="width:60%;">
+                <thead class="thead-default" style="color:#2C3E50;background-color:#ECF0F1">
+                    <tr>
+                        <th>Tester Name</th>
+                        <th>Date Run</th>
+                        <th>Valid</th>
+                        <th>Forced</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td> {{attempt.tester}} </td>
+                        <td> {{attempt.date_run}} </td>
+                        <td> {{attempt.valid}} </td>
+                        <td> {{attempt.overwrite_pass}} </td>
+                    </tr>
+                    <tr>
+                        <td><b>Comments:</b></td>
+                        <td colspan="3"> {{attempt.comments | default:"None" |linebreaks}} </td>
+                    </tr>
+                    <tr>
+                        <td><b>Image:</b></td>
+                        <td colspan="3">{% if attempt.has_image %}<a href="../media/{{attempt.image}}">{{attempt.image}}</a>
+                                        {% else %} No image {% endif %}</td>
+                    </tr>
+                    <tr>
+                        <td><b>Log Files:</b></td>
+                        <td colspan="3"><a href="../media/logs/{{filename}}">{{filename}}</a>
+                                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            {% if attempt.has_image %}
+            {% for image in attempt.get_images %}
+            <a href="../media/{{attempt.image}}/{{image}}"><img src="../media/{{attempt.image}}/{{image}}" style="width:10%"></a>
+            {% endfor %}
+            {% endif %}
+        <button class="btn btn-primary" onclick="document.getElementById('data_{{attempt_number}}').classList.toggle('hide')">Show Data</button>
+        <div style = "padding-left:2%; font-size:15px;" class="hide" id='data_{{attempt_number}}'>
+            <h5> Test Metadata: </h5>
+            <p style="white-space: pre-wrap;">{{data.str}}</p>
+            {% if data.has_error_report %}
+            <h5> Error Log: </h5>
+            <pre style="background-color: #2a2a2a; width: 81%;"> {{data.error_report}} </pre>
+            {% endif %}
+            {% if data.has_stdout %}
+            <h5> Failure Stdout: </h5>
+            <pre style="background-color: #2a2a2a; width: 81%;"> {{data.stdout}} </pre>
+            {% endif %}
+            {% if data.has_crashpath %}
+            <h5> Crash Path: </h5>
+            <pre style="background-color: #2a2a2a; width: 81%;"> {{data.crashpath}} </pre>
+            {% endif %}
+            {% if data.has_crashmsg %}
+            <h5> Crash Message: </h5>
+            <pre style="background-color: #2a2a2a; width: 81%;"> {{data.crashmsg}} </pre>
+            {% endif %}
+            {% if data.has_eRX_errcounts %}
+            <h5>eRX_errcounts</h5>
+                <table id="testsummary" class="table table-bordered" cellspacing="0" style="width:35%;">
+                     <thead class="thead-default" style="color:#2C3E50;background-color:#ECF0F1">
+                         <tr>
+                             {% if attempt.ECON_TYPE == "T" %}
+                             {% for number in data.ECON_T_eRX_shape %}
+                             <th>eRX{{number| add:"1"}}</th>
+                             {% endfor %}
+                             {% endif %}
+                             {% if attempt.ECON_TYPE == "D" %}
+                             {% for number in data.ECON_D_eRX_shape %}
+                             <th>eRX{{number| add:"1"}}</th>
+                             {% endfor %}
+                             {% endif %}
+                         </tr>
+                     </thead>
+                     <tbody>
+                         {% for row in data.eRX_errcounts %}
+                         <tr>
+                             {% if attempt.ECON_TYPE == "T" %}
+                             {% for number in data.ECON_T_eRX_shape %}
+                             <td>{{row|return_item:number}}</td>
+                             {% endfor %}
+                             {% endif %}
+                             {% if attempt.ECON_TYPE == "D" %}
+                             {% for number in data.ECON_D_eRX_shape %}
+                             <th>{{row|return_item:number}}</th>
+                             {% endfor %}
+                             {% endif %}
+                         </tr>
+                         {% endfor %}
+                     </tbody>
+                </table>
+            {% endif %}
+            {% if data.has_eTX_errcounts %}
+            <h5>eTX_errcounts</h5>
+                <table id="testsummary" class="table table-bordered" cellspacing="0" style="width:35%;">
+                     <thead class="thead-default" style="color:#2C3E50;background-color:#ECF0F1">
+                         <tr>
+                             {% if attempt.ECON_TYPE == "T" %}
+                             {% for number in data.ECON_T_eTX_shape %}
+                             <th>eTX{{number| add:"1"}}</th>
+                             {% endfor %}
+                             {% endif %}
+                             {% if attempt.ECON_TYPE == "D" %}
+                             {% for number in data.ECON_D_eTX_shape %}
+                             <th>eTX{{number| add:"1"}}</th>
+                             {% endfor %}
+                             {% endif %}
+                         </tr>
+                     </thead>
+                     <tbody>
+                         {% for row in data.eTX_errcounts %}
+                         <tr>
+                             {% if attempt.ECON_TYPE == "T" %}
+                             {% for number in data.ECON_T_eTX_shape %}
+                             <td>{{row|return_item:number}}</td>
+                             {% endfor %}
+                             {% endif %}
+                             {% if attempt.ECON_TYPE == "D" %}
+                             {% for number in data.ECON_D_eTX_shape %}
+                             <th>{{row|return_item:number}}</th>
+                             {% endfor %}
+                             {% endif %}
+                         </tr>
+                         {% endfor %}
+                     </tbody>
+                </table>
+            {% endif %}
+            {% if data.has_eTX_bitcounts %}
+            <h5>eTX_bitcounts</h5>
+                <table id="testsummary" class="table table-bordered" cellspacing="0" style="width:35%;">
+                     <thead class="thead-default" style="color:#2C3E50;background-color:#ECF0F1">
+                         <tr>
+                             {% if attempt.ECON_TYPE == "T" %}
+                             {% for number in data.ECON_T_eTX_shape %}
+                             <th>eTX{{number|add:"1"}}</th>
+                             {% endfor %}
+                             {% endif %}
+                             {% if attempt.ECON_TYPE == "D" %}
+                             {% for number in data.ECON_D_eTX_shape %}
+                             <th>eTX{{number|add:"1"}}</th>
+                             {% endfor %}
+                             {% endif %}
+                         </tr>
+                     </thead>
+                     <tbody>
+                         {% for row in data.eTX_bitcounts %}
+                         <tr>
+                             {% if attempt.ECON_TYPE == "T" %}
+                             {% for number in data.ECON_T_eTX_shape %}
+                             <td>{{row|return_item:number}}</td>
+                             {% endfor %}
+                             {% endif %}
+                             {% if attempt.ECON_TYPE == "D" %}
+                             {% for number in data.ECON_D_eTX_shape %}
+                             <th>{{row|return_item:number}}</th>
+                             {% endfor %}
+                             {% endif %}
+                         </tr>
+                         {% endfor %}
+                     </tbody>
+                </table>
+            {% endif %}
+            {% if data.has_eTX_delays %}
+            <h5>eTX_delays</h5>
+                <table id="testsummary" class="table table-bordered" cellspacing="0" style="width:5%">
+                     <thead class="thead-default" style="color:#2C3E50;background-color:#ECF0F1">
+                         <tr>
+                             <th>delays</th>
+                         </tr>
+                     </thead>
+                     <tbody>
+                         {% for row in data.eTX_delays %}
+                         <tr>
+                             <td> {{row.0}} </td>
+                         </tr>
+                         {% endfor %}
+                     </tbody>
+                </table>
+            {% endif %}
+        </div>
+        </div>
+        <br/>
+        {% endfor %}
+    </div>
+</div>
+<br/>
+<script>
+
+function submitOverwrite(attemptnumber){
+    pass = window.prompt("Tell me a secret:","Secret...");
+    var passid = "password_"+attemptnumber
+    document.getElementById(passid).value = pass;
+    var formid = "overwrite_form_"+attemptnumber
+    document.getElementById(formid).submit();
+}
+</script>
+{% endblock %}

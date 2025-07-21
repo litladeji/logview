@@ -1,0 +1,40 @@
+{% extends "cm_db/base.html" %}
+
+{% block title %}Test Details{% endblock %}
+{% block test-details %}class="active"{% endblock %}
+
+{% block content %}
+<div class="row" align="left" style="padding-left:50px;">
+        <h3>Test Details</h3><br>
+    <div id="breakLine" style="height:2px;width:25%;background-color:#E74C3C"></div>
+</div>
+<br><br>
+
+
+<div class="row">
+        <div class="col-md-12">
+                <table class="table" style="width:95%" align="center">
+                <thead>
+                        <tr>
+                                <th> Name </th>
+                                <th> Description </th>
+                                <th> Required? </th>
+                        </tr>
+                </thead>
+                <tbody>
+                        {% if test_list %}
+                        {% for test in test_list %}
+                        <tr align="left">
+                                <td> {{test.name}} </td>
+                                <td> {{test.description}} </td>
+                                <td> {{test.required}} </td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <h1> No tests in database </h1>
+                        {% endif %}
+                </tbody>
+                </table>
+        </div>
+</div>
+{% endblock %}

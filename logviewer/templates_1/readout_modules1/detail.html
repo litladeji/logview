@@ -1,0 +1,403 @@
+{% extends "readout_modules/base.html" %}
+
+{% block title %}{{rm.rm_number}}{% endblock %}
+{% block head %}
+<style>
+table.info {
+    width : 1000px;
+    table-layout : fixed;
+    border-collapse : collapse;
+}
+table.bias {
+    width : 500px;
+    table-layout : fixed;
+    border-collapse : collapse;
+}
+td {
+    padding : 5px;
+}
+table, td, th {
+    border : 1px solid white;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="row" align="left" style="padding-left:50px;">
+    <h3>Readout Module Overview</h3>
+    <div id="breakLine" style="height:2px;width:25%;background-color:#E74C3C"></div>
+</div><br>
+
+<!-- RM Info Table -->
+<table id="rminfo" class="info" style="margin-left:50px; font-size:30px;">
+    <col width="45%">
+    <col width="55%">
+    <tbody>
+        <div id="accordion" class="collapse">
+        <tr>
+            <td>Assember:</td>
+            <td>{{rm.assembler}}</td>
+        </tr>
+        <tr>
+            <td>Date Assembled:</td>
+            <td>{{rm.date}}</td>
+        </tr>
+        <tr>
+            <td>RM №:</td>
+            <td>{{rm.rm_number}}</td>
+        </tr>
+        <tr>
+            <td>CardPack №:</td>
+            <td>{{rm.card_pack_number}}</td>
+        </tr>
+        <tr>
+            <td>RM Unique ID:</td>
+            <td>{{rm.rm_uid}}</td>
+        </tr>
+        <tr>
+            <td>QIE card 1 №:</td>
+            <td><a href="{{ SITE_URL }}/cards/{{rm.card_1}}">{{rm.card_1}}</a></td>
+        </tr>
+        <tr>
+            <td>QIE card 2 №:</td>
+            <td><a href="{{ SITE_URL }}/cards/{{rm.card_2}}">{{rm.card_2}}</a></td>
+        </tr>
+        <tr>
+            <td>QIE card 3 №:</td>
+            <td><a href="{{ SITE_URL }}/cards/{{rm.card_3}}">{{rm.card_3}}</a></td>
+        </tr>
+        <tr>
+            <td>QIE card 4 №:</td>
+            <td><a href="{{ SITE_URL }}/cards/{{rm.card_4}}">{{rm.card_4}}</a></td>
+        </tr>
+        <tr>
+            <td>Optical Cable №:</td>
+            <td>{{rm.mtp_optical_cable}}</td>
+        </tr>
+        <tr>
+            <td>SiPM Control Card №:</td>
+            <td><a href="{{ SITE_URL }}/sipm/{{rm.sipm_control_card}}">{{rm.sipm_control_card}}</a></td>
+        </tr>
+        <tr>
+            <td>LV Assembly №:</td>
+            <td>{{rm.lv_assembly}}</td>
+        </tr>
+        <tr>
+            <td>Thermal Assembly №:</td>
+            <td>{{rm.therm_assembly}}</td>
+        </tr>
+        <tr>
+            <td>SiPM Array (BV1-8) №:</td>
+            <td>{{rm.sipm_array_1}}</td>
+        </tr>
+        <tr>
+            <td>Mixed SiPM array (BV9-16) №:</td>
+        <td>{{rm.mixed_sipm_array}}</td>
+        </tr>
+        <tr>
+            <td>SiPM Array (BV17-24) №:</td>
+            <td>{{rm.sipm_array_2}}</td>
+        </tr>
+        <tr>
+            <td>SiPM Array (BV25-32) №:</td>
+            <td>{{rm.sipm_array_3}}</td>
+        </tr>
+        <tr>
+            <td>SiPM Array (BV33-40) №:</td>
+            <td>{{rm.sipm_array_4}}</td>
+        </tr>
+        <tr>
+            <td>SiPM Array (BV41-48) №:</td>
+            <td>{{rm.sipm_array_5}}</td>
+        </tr>
+        <tr>
+            <td>SiPM Mounting Board Type:</td>
+            <td>{{rm.sipm_mounting}}</td>
+        </tr>
+        <tr>
+            <td>ODU type:</td>
+            <td>{{rm.odu_type}}</td>
+        </tr>
+        <tr>
+            <td>ODU №:</td>
+            <td>{{rm.odu_number}}</td>
+        </tr>
+        <tr>
+            <td>White Box №:</td>
+            <td>{{rm.minsk}}</td>
+        </tr>
+        <tr>
+            <td>DC-DC Converter 5V Output</td>
+            <td>{{rm.dcdc_output}}</td>
+        </tr>
+        </div>
+    </tbody>
+</table>
+
+
+<div class="row" align="left" style="padding-left:50px;width: 100%">
+    <h3>Comments:</h3>
+    <div id="breakLine" style="height:2px;width:25%;background-color:#E74C3C;"></div>
+    <p style="width:100%; white-space: pre-wrap;">{{rm.comments | default:"No comment given"}}</p>
+</div>
+
+<div class="row" align="left" style="padding-left:100px;width:50%">
+    <form action="" method="post">
+        {% csrf_token %}
+        <h4>Add a Comment</h4>
+        <textarea name="comment" rows="4" cols="20" class="form-control" placeholder="Comment..."></textarea>
+        <input type="submit" class="btn btn-primary" value="Submit" name="comment_add">
+    </form>
+</div>
+
+<div class="row" align="left" style="padding-left:50px;">
+    <h3>Location History</h3>
+    <div id="breakLine" style="height:2px;width:25%;background-color:#E74C3C"></div>
+    <br>
+</div>
+
+<table id="rmlocations" class="table">
+  <thead class="thead-default" style="color:#2C3E50;background-color:#ECF0F1">
+    <tr>
+      <th>Date</th>
+      <th>Location</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for location in locations %}
+    <tr>
+      <th scope="row">{{location.date_received | default:"No date recorded"}}</th>
+      <td>{{location.geo_loc}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="row" align="left" style="padding-left:100px;width:50%">
+    <form action="" method="post">
+        {% csrf_token %}
+        <h4>Add a Location</h4>
+        <input name="location" type="text" class="form-control" placeholder="Location...">
+        <input type="submit" class="btn btn-primary" value="Submit" name="location_add">
+    </form>
+</div>
+
+<div class="row" align="left" style="padding-left:50px;">
+    <h3>Uploaded File</h3>
+    <div id="breakLine" style="height:2px;width:20%;background-color:#E74C3C"></div>
+</div><br>
+<a href="{{rm.upload.url}}"><img src="{{rm.upload.url}}" style="width:60%;height:60%;"></a>
+<br><br>
+
+<div class="row" align="left" style="padding-left:50px;width: 100%">
+    <h3>Bias Voltages</h3>
+    <div id="breakLine" style="height:2px;width:25%;background-color:#E74C3C;"></div>
+</div><br>
+
+<table id="rmbv" class="bias" style="margin-left:50px; font-size:30px;">
+    <col width="30%">
+    <col width="70%">
+    <tbody>
+        <div id="accordion" class="collapse">
+        <tr>
+            <td>Channel</td>
+            <td>Bias Voltage (V)</td>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>{{bv.channel_01}}</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>{{bv.channel_02}}</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>{{bv.channel_03}}</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>{{bv.channel_04}}</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>{{bv.channel_05}}</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>{{bv.channel_06}}</td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td>{{bv.channel_07}}</td>
+        </tr>
+        <tr>
+            <td>8</td>
+            <td>{{bv.channel_08}}</td>
+        </tr>
+        <tr>
+            <td>9</td>
+            <td>{{bv.channel_09}}</td>
+        </tr>
+        <tr>
+            <td>10</td>
+            <td>{{bv.channel_10}}</td>
+        </tr>
+        <tr>
+            <td>11</td>
+            <td>{{bv.channel_11}}</td>
+        </tr>
+        <tr>
+            <td>12</td>
+            <td>{{bv.channel_12}}</td>
+        </tr>
+        <tr>
+            <td>13</td>
+            <td>{{bv.channel_13}}</td>
+        </tr>
+        <tr>
+            <td>14</td>
+            <td>{{bv.channel_14}}</td>
+        </tr>
+        <tr>
+            <td>15</td>
+            <td>{{bv.channel_15}}</td>
+        </tr>
+        <tr>
+            <td>16</td>
+            <td>{{bv.channel_16}}</td>
+        </tr>
+        <tr>
+            <td>17</td>
+            <td>{{bv.channel_17}}</td>
+        </tr>
+        <tr>
+            <td>18</td>
+            <td>{{bv.channel_18}}</td>
+        </tr>
+        <tr>
+            <td>19</td>
+            <td>{{bv.channel_19}}</td>
+        </tr>
+        <tr>
+            <td>20</td>
+            <td>{{bv.channel_20}}</td>
+        </tr>
+        <tr>
+            <td>21</td>
+            <td>{{bv.channel_21}}</td>
+        </tr>
+        <tr>
+            <td>22</td>
+            <td>{{bv.channel_22}}</td>
+        </tr>
+        <tr>
+            <td>23</td>
+            <td>{{bv.channel_23}}</td>
+        </tr>
+        <tr>
+            <td>24</td>
+            <td>{{bv.channel_24}}</td>
+        </tr>
+        <tr>
+            <td>25</td>
+            <td>{{bv.channel_25}}</td>
+        </tr>
+        <tr>
+            <td>26</td>
+            <td>{{bv.channel_26}}</td>
+        </tr>
+        <tr>
+            <td>27</td>
+            <td>{{bv.channel_27}}</td>
+        </tr>
+        <tr>
+            <td>28</td>
+            <td>{{bv.channel_28}}</td>
+        </tr>
+        <tr>
+            <td>29</td>
+            <td>{{bv.channel_29}}</td>
+        </tr>
+        <tr>
+            <td>30</td>
+            <td>{{bv.channel_30}}</td>
+        </tr>
+        <tr>
+            <td>31</td>
+            <td>{{bv.channel_31}}</td>
+        </tr>
+        <tr>
+            <td>32</td>
+            <td>{{bv.channel_32}}</td>
+        </tr>
+        <tr>
+            <td>33</td>
+            <td>{{bv.channel_33}}</td>
+        </tr>
+        <tr>
+            <td>34</td>
+            <td>{{bv.channel_34}}</td>
+        </tr>
+        <tr>
+            <td>35</td>
+            <td>{{bv.channel_35}}</td>
+        </tr>
+        <tr>
+            <td>36</td>
+            <td>{{bv.channel_36}}</td>
+        </tr>
+        <tr>
+            <td>37</td>
+            <td>{{bv.channel_37}}</td>
+        </tr>
+        <tr>
+            <td>38</td>
+            <td>{{bv.channel_38}}</td>
+        </tr>
+        <tr>
+            <td>39</td>
+            <td>{{bv.channel_39}}</td>
+        </tr>
+        <tr>
+            <td>40</td>
+            <td>{{bv.channel_40}}</td>
+        </tr>
+        <tr>
+            <td>41</td>
+            <td>{{bv.channel_41}}</td>
+        </tr>
+        <tr>
+            <td>42</td>
+            <td>{{bv.channel_42}}</td>
+        </tr>
+        <tr>
+            <td>43</td>
+            <td>{{bv.channel_43}}</td>
+        </tr>
+        <tr>
+            <td>44</td>
+            <td>{{bv.channel_44}}</td>
+        </tr>
+        <tr>
+            <td>45</td>
+            <td>{{bv.channel_45}}</td>
+        </tr>
+        <tr>
+            <td>46</td>
+            <td>{{bv.channel_46}}</td>
+        </tr>
+        <tr>
+            <td>47</td>
+            <td>{{bv.channel_47}}</td>
+        </tr>
+        <tr>
+            <td>48</td>
+            <td>{{bv.channel_48}}</td>
+        </tr>
+        </div>
+    </tbody>
+</table>
+
+{% endblock %}

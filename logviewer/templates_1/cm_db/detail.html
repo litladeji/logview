@@ -1,0 +1,210 @@
+{% extends "cm_db/base.html" %}
+
+{% block title %}{{card.barcode}}{% endblock %}
+{% block head %}
+<style>
+    .divider{
+        width:400px;
+        height:auto;
+        display:inline-block;
+    }
+    .forced{
+        color:#2C3E50;
+        background-color:#2ECC71;
+    }
+    .warn{
+        color:#2C3E50;
+        background-color:#F1C40F;
+    }
+    .okay{
+        color:#2ECC71;
+    }
+    .bad{
+        color:#2C3E50;
+        background-color:#E74C3C;
+    }
+    .comments{
+        margin-left:50px;
+        background:#27ae60;
+        width: 400px;
+        -moz-border-radius: 4px;
+        -webkit-border-radius: 4px;
+    }
+table.info {
+    width : 1200px;
+    table-layout : fixed;
+    border-collapse : collapse;
+}
+td {
+    padding : 5px;
+}
+table, td, th {
+    border : 1px solid white;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row" align="left" style="padding-left:50px;">
+    <h3>
+        CM Card Overview
+        <div class="divider"></div>
+        <a href="calibration" class="btn btn-primary">To Calibration Data</a>
+    </h3>
+    <div id="breakLine" style="height:2px;width:25%;background-color:#E74C3C"></div>
+</div><br>
+
+<!-- Card Info Table -->
+<table id="cardinfo" class="info" style="margin-left:50px; font-size:30px;">
+    <col width="25%">
+    <col width="30%">
+    <col width="45%">
+    <tbody>
+        <div id="accordion" class="collapse">
+        <tr>
+            <td>Status:</td>
+            <td class={{status.css}}>{{status.banner}}</td>
+            <td class={{status.css}}>{{status.passed}}/{{status.total}} tests passing</td>
+        </tr>
+        <tr>
+            <td>Barcode:</td>
+            <td>{{card.barcode}}</td>
+            <td>({{card.barcode}})</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>ECON-T:</td>
+            <!-- <td>{{rm}}<span style="display:inline-block; width:30px"></span><a href="{{ SITE_URL }}/rm/{{rm}}">[link to RM]</a></td> -->
+            <td>{{card.ECONT}}</td>
+            <td>{{card.ECONT}}</td>
+        </tr>
+        <tr>
+            <td>ECON-D:</td>
+            <!-- <td>{{cu}}<span style="display:inline-block; width:30px"></span><a href="{{ SITE_URL }}/cu/{{cu}}">[link to CU]</a></td> -->
+            <td>{{card.ECOND}}</td>
+            <td>{{card.ECOND}}</td>
+        </tr>
+        <tr>
+            <td>empty</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>empty</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>empty</td>
+            <td></td>
+            <td></td>
+        </tr>
+        </div>
+    </tbody>
+</table>
+
+<div class="row" align="left" style="padding-left:50px;width: 100%">
+    <h3>Comments:</h3>
+    <div id="breakLine" style="height:2px;width:25%;background-color:#E74C3C;"></div>
+    <p style="width:100%; white-space: pre-wrap;">{{card.comments | default:"No comment given"}}</p>
+</div>
+
+<div class="row" align="left" style="padding-left:100px;width:50%">
+    <form action="" method="post">
+        {% csrf_token %}
+        <h4>Add a Comment</h4>
+        <textarea name="comment" rows="4" cols="20" class="form-control" placeholder="Comment..."></textarea>
+        <input type="submit" class="btn btn-primary" value="Submit" name="comment_add">
+    </form>
+</div>
+
+<div class="row" align="left" style="padding-left:50px;">
+    <h3>Location History</h3>
+    <div id="breakLine" style="height:2px;width:25%;background-color:#E74C3C"></div>
+    <br>
+</div>
+
+<table id="cardlocations" class="table">
+  <thead class="thead-default" style="color:#2C3E50;background-color:#ECF0F1">
+    <tr>
+      <th>Date</th>
+      <th>Location</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for location in card.locations %}
+    <tr>
+      <th scope="row">{{location.date_received | default:"No date recorded"}}</th>
+      <td>{{location.geo_loc}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="row" align="left" style="padding-left:100px;width:50%">
+    <form action="" method="post">
+        {% csrf_token %}
+        <h4>Add a Location</h4>
+        <input name="location" type="text" class="form-control" placeholder="Location...">
+        <input type="submit" class="btn btn-primary" value="Submit" name="location_add">
+    </form>
+</div>
+
+<div class="row" align="left" style="padding-left:50px;">
+    <h3>Test Results</h3>
+    <div id="breakLine" style="height:2px;width:25%;background-color:#E74C3C"></div>
+    <br>
+</div>
+
+<div class="row" align="right" style="padding-right:50px;">
+  Search: <input type="text" style="color:#2C3E50" id="searchfield">
+</div>
+<br>
+
+<table id="testsummary" class="table table-bordered" cellspacing="0" width="100%">
+  <thead class="thead-default" style="color:#2C3E50;background-color:#ECF0F1">
+    <tr data-toggle="collapse" data-target="#accordion" class="clickable">
+      <th>Test<span class="fui-list-numbered" style="float:right"></span></th>
+      <th>Pass/Fail <span class="fui-list-numbered" style="float:right"></span></th>
+      <th>Date <span class="fui-list-numbered" style="float:right"></span></th>
+      <th>Historic Pass/Fail/Total</th>
+      <th>More</th>
+    </tr>
+  </thead>
+  <tbody>
+    <div id="accordion" class="collapse">
+    {% for test in attempts %}
+    <tr>
+      <th scope="row">{{test.test_name}}</th>
+      <td class="{{test.get_css_class}}">{{test.result}}
+          {% if not test.required %}
+          (NOT REQ)
+          {% endif %}
+      </td>
+      <td>{{test.most_recent_date}}</td>
+      <td>{{test.passed}}/{{test.failed}}/{{test.total}}</td>
+      <td><a href="{{test.test_name}}">[link to history]</a></td>
+    </tr>
+    {% endfor %}
+  </div>
+  </tbody>
+</table>
+
+<script src="https://code.jquery.com/jquery-1.12.3.js"></script>
+<script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    oTable = $('#testsummary').DataTable({
+      "paging":   false,
+      dom: 'lrtp',
+    }
+    );
+    $('#searchfield').keyup(function(){
+          oTable.search($(this).val()).draw();
+    })
+} );
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "readout_modules/base.html" %}
+
+{% block title %}Error{% endblock %}
+
+<style>
+  .top-three {
+      margin-bottom: 3cm;
+  }
+</style>
+
+{% block content %}
+<div class="row" align="left" style="padding-left:50px;">
+    <h3>
+        Readout Module Not Found
+    </h3>
+    <div id="breakLine" style="height:2px;width:25%;background-color:#E74C3C"></div>
+    <h6>Please enter a Barcode (up to 3 digits in decimal).</h6>
+    <h6>Please enter an RM ID (at least for card in slot 4). Do not include final 0x70 family code.</h6>
+    <h6>RM Unique IDs consist of four QIE unique ids (6 unique hex digits) combined with '_'</h6>
+    <h6>Example: Readout Module 120, RM Unique ID EAA2BB_EAC9D1_EAD41E_EA98AA</h6>
+    <h6>Enter 120 for barcode or at least EA98AA for RM ID (card in slot 4)</h6>
+</div><br>
+{% endblock %}
