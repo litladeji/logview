@@ -19,7 +19,7 @@ import os
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "logview.settings")
 django.setup()
 
-from logviewer.models import Test, Overall_Summary, CM_Card
+from cm_db.models import Test, Overall_Summary, CM_Card
 
 ## Grab JSON Files
 idir = "imports"   #changed the origninal directory

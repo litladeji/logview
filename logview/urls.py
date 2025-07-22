@@ -14,10 +14,16 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
+from django.urls import include, path, re_path
 from django.contrib import admin
-from django.urls import path, include
+from django.views.generic import RedirectView
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('logviewer.urls')),
+    # path('logviewer/', include('logviewer.urls')),
+    path('cards/', include('cm_db.card_urls',  namespace='cards')),
+    path('', RedirectView.as_view(pattern_name='cards:catalog',permanent=False)),
+    re_path(r'^admin', admin.site.urls),
 ]

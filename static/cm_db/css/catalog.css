@@ -1,0 +1,5 @@
+.splitColumns {
+  -webkit-column-count: 4; /* Chrome, Safari, Opera */
+  -moz-column-count: 4; /* Firefox */
+  column-count: 4;
+}
