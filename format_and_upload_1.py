@@ -10,7 +10,7 @@ import numpy as np
 import glob
 import json
 import django
-
+import datetime
 from django.conf import settings
 import os
 
@@ -22,7 +22,7 @@ django.setup()
 from cm_db.models import Test, Overall_Summary, CM_Card
 
 ## Grab JSON Files
-idir = "imports"   #changed the origninal directory
+idir = "imports"   #changed the original directory
 odir = "media/logs"
 fnames = sorted([
     os.path.join(idir,f)
@@ -107,8 +107,11 @@ def Create_Fresh_Card(data, fname):
     for test in test_outcomes:
         test["required"] = 1
     for test in test_outcomes:
-        date = fname[62:][:10]
-        test["most_recent_date"] = date
+        # date = fname[62:][:10]
+        timestamp = data['created']
+        dt = datetime.datetime.fromtimestamp(timestamp)
+        formatted_date = dt.date().isoformat() 
+        test["most_recent_date"] = formatted_date
     newcard.test_outcomes = test_outcomes
     #save test details
     newcard.save()
@@ -193,8 +196,10 @@ def Update_Existing_Card(data, fname):
     for test in test_outcomes:
         test["required"] = 1
     for test in test_outcomes:
-        date = fname[62:][:10]
-        test["most_recent_date"] = date
+        timestamp = data['created']
+        dt = datetime.datetime.fromtimestamp(timestamp)
+        formatted_date = dt.date().isoformat() 
+        test["most_recent_date"] = formatted_date
     oldcard.test_outcomes = test_outcomes
     #save test details
 
@@ -231,15 +236,19 @@ def UploadTests(data, fname):
         new_test.barcode = barcode
         short_fname =f"{fname}".replace(f"{idir}/","") # 7 the use of formatted string here is unecessary
         #print(short_fname)
-        date = str(short_fname[12:][:10])
-        hour = int(short_fname[23:][:2])
-        minute = str(int(short_fname[26:][:2]))
-        if minute == '0':
-            minute = '00'
-        if hour > 12:
-            time = date + ": " + str(hour % 12) + ":" + minute + " PM"
-        else:
-            time = date + ": " + str(hour) + ":" + minute + " AM"
+        # date = str(short_fname[12:][:10])
+        # hour = int(short_fname[23:][:2])
+        # minute = str(int(short_fname[26:][:2]))
+        # if minute == '0':
+        #     minute = '00'
+        # if hour > 12:
+        #     time = date + ": " + str(hour % 12) + ":" + minute + " PM"
+        # else:
+        #     time = date + ": " + str(hour) + ":" + minute + " AM"
+
+        timestamp = data['created']
+        dt = datetime.datetime.fromtimestamp(timestamp)
+        time = dt.strftime("%Y-%m-%d: %I:%M %p").replace(" 0", " ")
         new_test.date_run = time
         new_test.outcome = test['outcome']
 
@@ -347,10 +356,11 @@ def jsonFileUploader(fname):
         data = json.load(jsonfile)
     ## preprocess the JSON file
     barcode = get_Barcode(data)
-    #check DB for existing entries of the same name. Decide whether to update existing entry or create new one
+    #check DB for existing entries of the same name. Decide whether to updte existing entry or create new one
     ID_List = CM_Card.objects.values_list('barcode',flat=True)
     #print(ID_List)
-    if barcode in ID_List:
+    # I updated this code. The first condition checks if there is an existing chip number. for any card with a missing chip number i would assume it not being too impoortant and as sucj there is no need to updte any previous entry
+    if barcode in ID_List and barcode != "MissingID":
         print(barcode, "already exists! Updating Entry with new data...")
         Update_Existing_Card(data, fname)
     else:
@@ -371,32 +381,19 @@ def main():
         )
 
 
-
-   
-    # Nummary = Overall_Summary.objects.first()
-
-    # if Nummary:
-    #     print("Total:", Nummary.totalcards)
-    #     print("Passed:", Nummary.passedcards)
-    #     print("Failed:", Nummary.failedcards)
-    #     print("Test Types:", )
-    #     for test in Nummary.test_types:
-    #         print(f" - {test['test_name']}: Passed={test['number_passed']}, Total={test['number_total']}")
-    # else:
-    #     print("No summary found.")
-
     print("starting file upload script...")
     filename_list = list(Test.objects.values_list("filename"))
+    filename_set = set(name[0] for name in filename_list)
     #print("FILENAME LIST:",filename_list)
     num_uploads = 0
+    # I'm assuming the efficiency of this loop is o(n) which might be a problem for larger volumes do i converted the list to a set
     for i, fname in enumerate(fnames):
         short_fname = os.path.basename(fname)
-
         if short_fname not in filename_list:
-            print("uploading file",i)
+            print("uploading file",i+1)
             jsonFileUploader(fname)
             #this is to prevent accidentally uploading two of the same file at once
-            filename_list.append((short_fname))
+            filename_set.add(short_fname)
             num_uploads += 1
         else: print ("file already uploaded! skipping.")
           
