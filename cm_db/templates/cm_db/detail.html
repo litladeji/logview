@@ -31,7 +31,7 @@
         -webkit-border-radius: 4px;
     }
 table.info {
-    width : 1200px;
+    width : 1000px;
     table-layout : fixed;
     border-collapse : collapse;
 }
@@ -57,47 +57,26 @@ table, td, th {
 <!-- Card Info Table -->
 <table id="cardinfo" class="info" style="margin-left:50px; font-size:30px;">
     <col width="25%">
-    <col width="30%">
-    <col width="45%">
+    <col width="35%">
     <tbody>
         <div id="accordion" class="collapse">
         <tr>
             <td>Status:</td>
-            <td class={{status.css}}>{{status.banner}}</td>
-            <td class={{status.css}}>{{status.passed}}/{{status.total}} tests passing</td>
+            <td class={{status.css}}>{{status.banner}} - {{status.passed}}/{{status.total}} tests passed </td>
         </tr>
         <tr>
             <td>Barcode:</td>
             <td>{{card.barcode}}</td>
-            <td>({{card.barcode}})</td>
-            <td></td>
         </tr>
         <tr>
             <td>ECON-T:</td>
             <!-- <td>{{rm}}<span style="display:inline-block; width:30px"></span><a href="{{ SITE_URL }}/rm/{{rm}}">[link to RM]</a></td> -->
-            <td>{{card.ECONT}}</td>
             <td>{{card.ECONT}}</td>
         </tr>
         <tr>
             <td>ECON-D:</td>
             <!-- <td>{{cu}}<span style="display:inline-block; width:30px"></span><a href="{{ SITE_URL }}/cu/{{cu}}">[link to CU]</a></td> -->
             <td>{{card.ECOND}}</td>
-            <td>{{card.ECOND}}</td>
-        </tr>
-        <tr>
-            <td>empty</td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>empty</td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>empty</td>
-            <td></td>
-            <td></td>
         </tr>
         </div>
     </tbody>
