@@ -105,14 +105,37 @@ class CatalogView(generic.ListView):
     def numberCards(self):
         return len(self.cards)
 
+# def catalog(request):
+#     """ This displays a list of all CM cards """
+#     cards = CM_Card.objects.values_list('barcode', flat=True).distinct()
+#     count = len(cards)
+#     for card in cards:
+#         UpdateCardSummary(card)
+#     return render(request, 'cm_db/catalog.html', {'barcode_list': cards,
+#                                                       'total_count': count,
+#                                                                             })
+
+
 def catalog(request):
     """ This displays a list of all CM cards """
-    cards = CM_Card.objects.values_list('barcode', flat=True).distinct()
-    count = len(cards)
+    cards = CM_Card.objects.all().order_by("barcode")
+    catalog_data = []
+
     for card in cards:
-        UpdateCardSummary(card)
-    return render(request, 'cm_db/catalog.html', {'barcode_list': cards,
-                                                      'total_count': count})
+        UpdateCardSummary(card.barcode)
+        catalog_data.append({
+            "barcode": card.barcode,
+            "status": card.summary  # This includes banner, css, etc.
+        })
+
+    count = len(catalog_data)
+
+    return render(request, 'cm_db/catalog.html', {
+        'barcode_list': catalog_data,
+        'total_count': count,
+    })
+
+
 
 def summary(request):
     """ This displays a summary of the cards """
