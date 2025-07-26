@@ -105,7 +105,7 @@ class Failure_Info(djongo_models.Model):
 
     class Meta:
         abstract = True
-
+        
 class Test_Details(djongo_models.Model):
     test_metadata  = EmbeddedField(model_container = Test_Metadata, null = True)
     #failure_info = EmbeddedField(model_container = Failure_Info, null = True)
