@@ -71,6 +71,10 @@ def Create_Fresh_Card(data, fname):
     newcard.summary = blanksummary
     #save test outcomes
     test_outcomes = []
+    # I created this to save the files of multiple or previous runs(marker)
+    test_file_name =[]
+    test_file_name.append(os.path.basename(fname))
+    newcard.test_file_name = test_file_name
     for test in data['tests']:
         test_outcome_temp = {"test_name":f"{stringReplace(test['nodeid'].split('::')[1])}", "passed":0, "total":1, "failed":0, "anyFailed":0, "anyForced":0, "result":"Incomplete"}
         result = test['outcome']
@@ -103,7 +107,7 @@ def Create_Fresh_Card(data, fname):
             test["get_css_class"] = "warn"
     #TEMP BANDAID FIX BECAUSE I DO NOT YET KNOW WHICH TESTS ARE REQUIRED
 
-    # is there really need for seperating each of this for statements
+    # is there really need for seperating each of this for statements(marker)
     for test in test_outcomes:
         test["required"] = 1
     for test in test_outcomes:
@@ -131,13 +135,16 @@ def Update_Existing_Card(data, fname):
     #id assignment is easy. Just leave it as is
     old_test_outcomes = oldcard.test_outcomes
     test_outcomes = []
+    # I created this to save the files of multiple or previous runs(marker)
+    test_version_file =[]
+    test_version_file.append(os.path.basename(fname))
     for test in data['tests']:
         test_name = f"{stringReplace(test['nodeid'].split('::')[1])}"
         result = test['outcome']
         new = True
         #nesting a for loop here is very slow. There's likely a clever workaround using faster pymongo querying but for now this is a working solution.
         for test in old_test_outcomes:
-            if test["test_name"] == test_name:
+            if test["test_name"] == test_name: 
                 new = False
                 test_outcome_new = test
                 test_outcome_new["total"] = str(int(test_outcome_new["total"])+1)
@@ -157,20 +164,20 @@ def Update_Existing_Card(data, fname):
                     #test_outcome_new["result"] = "Forced"
                     #test_outcome_new["anyForced"] = 1
                 test_outcomes.append(test_outcome_new)
-                pass
-        if new:
-            test_outcome_new = {"test_name":test_name, "passed":0, "total":1, "failed":0, "anyForced":0, "anyFailed":0, "result":"Incomplete"}
-            if result == 1:
-                test_outcome_new["passed"] = 1
-                test_outcome_new["result"] = "Passed"
-            elif result == 0:
-                test_outcome_new["result"] = "Failed"
-                test_outcome_new["anyFailed"] = 1
-                test_outcome_new["failed"] = 1
-            #if result == -1:
-                #test_outcome_new["result"] = "Forced"
-                #test_outcome_new["anyForced"] = 1
-            test_outcomes.append(test_outcome_new)
+            else:
+        # if new: I think we could use else statement cos if the test does not exist it is meant to save it and its possible to have more than onw instance (marker)
+                test_outcome_new = {"test_name":test_name, "passed":0, "total":1, "failed":0, "anyForced":0, "anyFailed":0, "result":"Incomplete"}
+                if result == 1:
+                    test_outcome_new["passed"] = 1
+                    test_outcome_new["result"] = "Passed"
+                elif result == 0:
+                    test_outcome_new["result"] = "Failed"
+                    test_outcome_new["anyFailed"] = 1
+                    test_outcome_new["failed"] = 1
+                #if result == -1:
+                    #test_outcome_new["result"] = "Forced"
+                    #test_outcome_new["anyForced"] = 1
+                test_outcomes.append(test_outcome_new)
     for test in test_outcomes:
         result = test["result"]
         if result == "Passed":
@@ -349,6 +356,16 @@ def UploadTests(data, fname):
 
         new_test.save()
     print(i+1,"tests added to file of chip",barcode) # 6 I dont get the logic here
+# I created this function to store the entire json documemt for each test in the mongodb database (marker)
+def saveCardFile(fname):
+    with open(fname) as r:
+        data = json.load(r)
+    short_fname = os.path.basename(fname)
+    save_file = File.objects.create()
+    save_file.File_name = short_fname
+    save_file.file = data
+    
+
 
 def jsonFileUploader(fname):
     ## open the JSON File
@@ -359,7 +376,7 @@ def jsonFileUploader(fname):
     #check DB for existing entries of the same name. Decide whether to updte existing entry or create new one
     ID_List = CM_Card.objects.values_list('barcode',flat=True)
     #print(ID_List)
-    # I updated this code. The first condition checks if there is an existing chip number. for any card with a missing chip number i would assume it not being too impoortant and as sucj there is no need to updte any previous entry
+    # I updated this code. The first condition checks if there is an existing chip number. for any card with a missing chip number i would assume it not being too important and as such there is no need to updte any previous entry
     if barcode in ID_List and barcode != "MissingID":
         print(barcode, "already exists! Updating Entry with new data...")
         Update_Existing_Card(data, fname)
@@ -388,8 +405,9 @@ def main():
     num_uploads = 0
     # I'm assuming the efficiency of this loop is o(n) which might be a problem for larger volumes do i converted the list to a set
     for i, fname in enumerate(fnames):
-        short_fname = os.path.basename(fname)
-        if short_fname not in filename_list:
+        short_fname = os.path.basename(fname) 
+        if short_fname not in filename_set:
+            saveCardFile(fname)
             print("uploading file",i+1)
             jsonFileUploader(fname)
             #this is to prevent accidentally uploading two of the same file at once
